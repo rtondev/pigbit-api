@@ -1,0 +1,57 @@
+services:
+  app:
+    build: .
+    container_name: pigbit-api
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JAVA_OPTS: ${JAVA_OPTS:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: pigbit-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-pigbit}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT_EXPOSE:-5433}:5432"
+    volumes:
+      - pigbit-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pigbit}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pigbit-redis
+    ports:
+      - "${REDIS_PORT_EXPOSE:-6379}:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - pigbit-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pigbit-pg-data:
+  pigbit-redis-data:
