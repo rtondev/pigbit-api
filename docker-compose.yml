@@ -43,7 +43,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 6000
       DATABASE_URL: postgresql://pigbit:pigbit@postgres:5432/pigbit
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
