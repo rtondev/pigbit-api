@@ -61,7 +61,9 @@ import { AppService } from './app.service';
         SensitiveChangeCode,
         ApiKey,
       ],
-        synchronize: process.env.NODE_ENV === 'development',
+        synchronize:
+          process.env.NODE_ENV === 'development' ||
+          process.env.DB_SYNC === 'true',
       }),
       inject: [ConfigService],
     }),
