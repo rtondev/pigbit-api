@@ -1,39 +1,18 @@
 services:
-  app:
-    build: .
-    container_name: pigbit-api
-    ports:
-      - "${SERVER_PORT:-8080}:8080"
-    env_file:
-      - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_HOST: db
-      DB_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JAVA_OPTS: ${JAVA_OPTS:-}
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  db:
+  postgres:
     image: postgres:16-alpine
-    container_name: pigbit-db
-    env_file:
-      - .env
+    container_name: pigbit-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-pigbit}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_USER: pigbit
+      POSTGRES_PASSWORD: pigbit
+      POSTGRES_DB: pigbit
     ports:
-      - "${DB_PORT_EXPOSE:-5433}:5432"
+      - "5432:5432"
     volumes:
-      - pigbit-pg-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pigbit}"]
+      test: ["CMD-SHELL", "pg_isready -U pigbit -d pigbit"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -41,17 +20,43 @@ services:
   redis:
     image: redis:7-alpine
     container_name: pigbit-redis
+    restart: unless-stopped
     ports:
-      - "${REDIS_PORT_EXPOSE:-6379}:6379"
-    command: ["redis-server", "--appendonly", "yes"]
+      - "6379:6379"
     volumes:
-      - pigbit-redis-data:/data
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pigbit-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://pigbit:pigbit@postgres:5432/pigbit
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      NOWPAYMENTS_API_URL: ${NOWPAYMENTS_API_URL:-https://api-sandbox.nowpayments.io/v1}
+      NOWPAYMENTS_USE_SANDBOX: ${NOWPAYMENTS_USE_SANDBOX:-true}
+      NOWPAYMENTS_API_KEY: ${NOWPAYMENTS_API_KEY}
+      NOWPAYMENTS_IPN_SECRET: ${NOWPAYMENTS_IPN_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
-  pigbit-pg-data:
-  pigbit-redis-data:
+  postgres_data:
+  redis_data:

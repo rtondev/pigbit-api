@@ -1,253 +1,73 @@
-# Pigbit
+# PIGBIT API
 
-Pigbit e uma aplicacao backend desenvolvida com Java 21 e Spring Boot, preparada para ambientes de desenvolvimento e producao usando profiles, variaveis de ambiente, Docker e Docker Compose.
+Plataforma SaaS de Pagamentos em Criptomoedas. Gateway: NOWPayments.
 
----
+## Requisitos
 
-## Tecnologias
+- Node 20+
+- Yarn
+- Docker (PostgreSQL, Redis)
 
-- Java 21
-- Spring Boot
-- Spring Web MVC
-- Spring Data JPA
-- Hibernate 6
-- PostgreSQL
-- HikariCP
-- Flyway
-- Redis
-- Maven
-- Docker e Docker Compose
-- Lombok
-
----
-
-## Estrutura do projeto
-
-```text
-pigbit/
-├── Dockerfile
-├── docker-compose.yml
-├── docker-compose.dev.yml
-├── docker-compose.prod.yml
-├── .env.example
-├── pom.xml
-├── README.md
-├── docs/
-│   └── ANALISE_SISTEMA.md
-├── src/
-│   ├── main/
-│   │   ├── java/com/pigbit/
-│   │   │   ├── PigbitApplication.java
-│   │   │   ├── application/
-│   │   │   │   ├── controller/
-│   │   │   │   ├── dto/
-│   │   │   │   ├── exception/
-│   │   │   │   └── webhook/
-│   │   │   ├── core/
-│   │   │   │   ├── model/
-│   │   │   │   ├── service/
-│   │   │   │   └── gateway/
-│   │   │   └── infrastructure/
-│   │   │       ├── config/
-│   │   │       ├── email/
-│   │   │       ├── integration/
-│   │   │       ├── persistence/
-│   │   │       ├── redis/
-│   │   │       ├── security/
-│   │   │       └── gateway/
-│   │   └── resources/
-│   │       ├── application.yaml
-│   │       ├── application-dev.yaml
-│   │       ├── application-prod.yaml
-│   │       └── db/migration/
-│   │           └── V1__initial_schema.sql
-│   └── test/
-```
-
----
-
-## Pre-requisitos
-
-### Desenvolvimento local
-- Java 21
-- Maven (ou ./mvnw)
-- PostgreSQL
-- Redis (recomendado; obrigatorio para fluxos de auth/rate limit)
-- Docker (opcional)
-
-### Producao
-- Docker
-- Docker Compose v2
-- Banco de dados externo (PostgreSQL)
-- Redis externo (recomendado)
-
----
-
-## Variaveis de ambiente
-
-O projeto nao possui credenciais hardcoded. Todas as configuracoes sensiveis sao feitas via variaveis de ambiente.
-
-### .env.example (resumo)
-
-```env
-SPRING_PROFILES_ACTIVE=dev
-SERVER_PORT=8080
-TZ=America/Sao_Paulo
-JAVA_OPTS=-Xms256m -Xmx512m
-
-DB_HOST=localhost
-DB_PORT=5432
-DB_PORT_EXPOSE=5434
-DB_NAME=pigbit
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_SSL_MODE=disable
-
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PORT_EXPOSE=6379
-REDIS_PASSWORD=
-REDIS_TIMEOUT=2000
-
-MAIL_HOST=
-MAIL_PORT=587
-MAIL_USER=
-MAIL_PASSWORD=
-MAIL_FROM=no-reply@pigbit.local
-MAIL_SMTP_AUTH=true
-MAIL_SMTP_STARTTLS=true
-
-JWT_SECRET=
-JWT_EXP_MINUTES=1440
-CNPJ_API_URL=https://receitaws.com.br/v1/cnpj
-NOWPAYMENTS_BASE_URL=https://api.nowpayments.io
-NOWPAYMENTS_API_KEY=
-NOWPAYMENTS_IPN_SECRET=
-WITHDRAWAL_ALERT_THRESHOLD_PERCENT=200
-```
-
-Copie para `.env` e ajuste conforme necessario:
+## Setup
 
 ```bash
+yarn install
 cp .env.example .env
+docker-compose up -d postgres redis
+yarn start:dev
 ```
 
----
-
-## Configuracao dos profiles
-
-### application.yaml (base)
-
-- Mail, Redis, JWT, NowPayments, CNPJ e actuator
-- Import opcional de `.env.properties`
-
-### application-dev.yaml (desenvolvimento)
-
-- Postgres local
-- ddl-auto=update
-- logs SQL habilitados
-- Flyway habilitado
-
-### application-prod.yaml (producao)
-
-- Postgres externo
-- ddl-auto=validate
-- Flyway habilitado
-- SSL opcional via DB_SSL_MODE
-
----
-
-## Como rodar
-
-### 1) Local sem Docker
-
-Crie o banco:
-
-```sql
-CREATE DATABASE pigbit;
-```
-
-Suba a aplicacao:
+## Docker (full stack)
 
 ```bash
-export SPRING_PROFILES_ACTIVE=dev
-./mvnw spring-boot:run
+docker-compose up -d
 ```
 
-Acesse:
+## Variáveis de Ambiente
 
-```
-http://localhost:8080
-```
-
----
-
-### 2) Local com Docker (dev)
-
-Suba app + Postgres + Redis:
-
-```bash
-docker compose -f docker-compose.dev.yml --env-file .env up -d
-```
-
----
-
-### 3) Subir apenas a infra (db + redis)
-
-```bash
-docker compose -f docker-compose.dev.yml --env-file .env up -d db redis
-```
-
-Depois rode a app no host:
-
-```bash
-./mvnw spring-boot:run
-```
-
----
-
-## Producao com Docker
-
-### Build da imagem
-
-```bash
-docker build -t pigbit/api:1.0.0 .
-```
-
-### Subir em producao
-
-```bash
-docker compose -f docker-compose.prod.yml --env-file .env up -d
-```
-
-Se quiser subir Redis junto:
-
-```bash
-docker compose -f docker-compose.prod.yml --env-file .env --profile infra up -d
-```
-
----
+| Variável | Descrição |
+|----------|-----------|
+| DATABASE_URL | PostgreSQL connection string |
+| REDIS_URL | Redis connection string |
+| JWT_SECRET | Segredo para tokens JWT |
+| NOWPAYMENTS_API_URL | URL base da API NOWPayments |
+| NOWPAYMENTS_USE_SANDBOX | `true` para sandbox, `false` para produção |
+| NOWPAYMENTS_API_KEY | Chave API NOWPayments |
+| NOWPAYMENTS_IPN_SECRET | Segredo para validação HMAC do webhook |
+| SMTP_HOST | Host SMTP para envio de emails |
+| SMTP_PORT | Porta SMTP (587) |
+| SMTP_USER | Usuário SMTP |
+| SMTP_PASS | Senha SMTP |
+| EMAIL_FROM | Email remetente |
+| APP_URL | URL base da aplicação |
 
 ## Swagger
 
-- UI: `/swagger`
-- OpenAPI: `/v3/api-docs`
+http://localhost:3000/api/docs
 
----
+## Endpoints
 
-## Testes
-
-```bash
-./mvnw test
-```
-
----
-
-## Boas praticas adotadas
-
-- Profiles separados (dev / prod)
-- Variaveis de ambiente
-- Docker multi-stage
-- Flyway
-- Soft delete via `deleted_at`
-- Sem credenciais hardcoded
+- `POST /auth/register` - Registro de lojista
+- `POST /auth/login` - Login (retorna `requires2fa` se 2FA ativo)
+- `POST /auth/login/2fa` - Login com código 2FA
+- `POST /auth/password-reset/request` - Solicitar reset de senha
+- `POST /auth/password-reset/confirm` - Confirmar nova senha
+- `POST /auth/email-verify/send` - Enviar código verificação email
+- `POST /auth/email-verify/validate` - Validar código email
+- `POST /auth/2fa/enable` - Ativar 2FA (QR Code)
+- `POST /auth/2fa/verify-enable` - Confirmar 2FA
+- `POST /auth/2fa/disable` - Desativar 2FA
+- `GET /users/me` - Perfil (JWT)
+- `PATCH /users/me` - Atualizar perfil (telefone, nome fantasia)
+- `POST /users/me/sensitive-change/request` - Solicitar código para alterar email/CNPJ
+- `PATCH /users/me/email` - Alterar email (código + 2FA se ativo)
+- `PATCH /users/me/cnpj` - Alterar CNPJ (código + 2FA se ativo)
+- `POST /products` - Cadastrar produto (JWT)
+- `GET /products` - Listar produtos (JWT)
+- `POST /invoices` - Criar invoice/cobrança (JWT)
+- `GET /invoices/checkout/:paymentId` - Dados para checkout (público)
+- `POST /webhooks/nowpayments` - Webhook NOWPayments
+- `GET /companies/cnpj/:cnpj` - Consulta CNPJ (BrasilAPI) - público
+- `GET /companies/me` - Empresa do lojista
+- `POST /companies` - Cadastrar/atualizar empresa
+- `GET /audit-logs` - Histórico de auditoria (RF-028)

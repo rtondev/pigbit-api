@@ -1,6 +1,8 @@
-target
+node_modules
+dist
 .git
-.gitignore
-.idea
-.vscode
+.env
 *.log
+coverage
+.nyc_output
+test

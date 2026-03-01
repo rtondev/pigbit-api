@@ -1,14 +1,26 @@
-# Build stage
-FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
+FROM node:20-alpine AS builder
+
 WORKDIR /app
+
+COPY package.json yarn.lock ./
+RUN corepack enable \
+  && corepack prepare yarn@4.12.0 --activate \
+  && yarn install --immutable
+
 COPY . .
-RUN mvn clean package -DskipTests
+RUN yarn build
 
-# Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+FROM node:20-alpine
+
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
 
-ENV JAVA_OPTS=""
-EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
+COPY package.json yarn.lock ./
+RUN corepack enable \
+  && corepack prepare yarn@4.12.0 --activate \
+  && yarn install --immutable
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+
+CMD ["node", "dist/main.js"]
