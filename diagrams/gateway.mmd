@@ -1,0 +1,19 @@
+%% Diagrama do Gateway de Pagamento - Pigbit (Português)
+graph TD
+  Cliente["Cliente (pagador)"]
+  Frontend["Frontend (Checkout)"]
+  API["API Pigbit (Nest.js)"]
+  Gateway["Gateway de Pagamento (NowPayments)"]
+  Webhook["Webhook NOWPayments"]
+  DB["Postgres DB"]
+
+  Cliente -->|inicia pagamento| Frontend
+  Frontend -->|cria invoice| API
+  API -->|registra invoice| DB
+  API -->|cria pagamento| Gateway
+  Gateway -->|retorna link de pagamento| API
+  API -->|redireciona para gateway| Frontend
+  Frontend -->|redireciona| Gateway
+  Gateway -->|status do pagamento| Webhook
+  Webhook -->|valida HMAC + atualiza invoice| API
+  API -->|atualiza status| DB
