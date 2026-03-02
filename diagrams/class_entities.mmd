@@ -1,0 +1,65 @@
+%% Diagrama de Classes - Entidades backend (Português)
+classDiagram
+  class Empresa {
+    +uuid id_empresa
+    +string nome
+    +string cnpj
+    +string email_contato
+    +Date criado_em
+  }
+
+  class Usuario {
+    +uuid id_usuario
+    +uuid id_empresa
+    +string email
+    +string senha_hash
+    +string papel
+    +bool email_verificado
+    +Date criado_em
+  }
+
+  class Produto {
+    +uuid id_produto
+    +uuid id_empresa
+    +string nome
+    +decimal preco
+  }
+
+  class Fatura {
+    +uuid id_fatura
+    +uuid id_empresa
+    +uuid id_cliente
+    +decimal total
+    +string status
+    +Date emitida_em
+  }
+
+  class Carteira {
+    +uuid id_carteira
+    +uuid id_usuario
+    +decimal saldo
+    +string moeda
+  }
+
+  class Transacao {
+    +uuid id_transacao
+    +uuid id_carteira
+    +uuid id_fatura
+    +decimal valor
+    +string tipo
+    +string status
+  }
+
+  class ChaveApi {
+    +uuid id_chave_api
+    +uuid id_empresa
+    +string hash_chave
+    +bool habilitada
+  }
+
+  Empresa "1" -- "*" Usuario
+  Empresa "1" -- "*" Produto
+  Empresa "1" -- "*" Fatura
+  Usuario "1" -- "*" Carteira
+  Carteira "1" -- "*" Transacao
+  Fatura "1" -- "*" Transacao

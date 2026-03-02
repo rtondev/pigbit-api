@@ -1,0 +1,24 @@
+%% Sequência: Recebimento e processamento de webhook (Português)
+sequenceDiagram
+  participant NowPayments as "NowPayments"
+  participant API as "API Pigbit"
+  participant Worker as "Worker (fila / processador)"
+  participant DB as Postgres
+  participant Auditoria as "Serviço de Auditoria"
+  participant Webhooks as "Envio de webhooks (outbound)"
+
+  NowPayments->>API: POST /webhooks/nowpayments (payload + assinatura)
+  API->>API: verificar assinatura
+  alt assinatura inválida
+    API-->>NowPayments: 401 Unauthorized
+  else assinatura válida
+    API->>DB: localizar fatura por external_id
+    API->>DB: inserir ou atualizar registro de transação
+    API->>Auditoria: registrar webhook recebido
+    API->>Worker: enfileirar job de processamento (atualizar fatura, notificar)
+    Worker->>DB: atualizar fatura.status, marcar transação
+    Worker->>Webhooks: POST endpoint da empresa (com retries)
+    Webhooks-->>Worker: 2xx / erro retryable
+    Worker->>Auditoria: registrar resultado da entrega do webhook
+    API-->>NowPayments: 200 OK
+  end

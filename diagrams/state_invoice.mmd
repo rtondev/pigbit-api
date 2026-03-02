@@ -1,0 +1,13 @@
+%% Diagrama de Estados - Fatura / Transação (Português)
+stateDiagram-v2
+  [*] --> Rascunho
+  Rascunho --> Emitida : emitir()
+  Emitida --> AguardandoPagamento : aguardar_pagamento
+  AguardandoPagamento --> Paga : pagamento_confirmado
+  AguardandoPagamento --> Falhada : pagamento_falhou
+  Paga --> Conciliada : reconciliar
+  Paga --> Reembolsada : reembolso_iniciado
+  Falhada --> Cancelada : cancelar
+  Reembolsada --> Conciliada : reembolso_conciliado
+  Conciliada --> [*]
+  Cancelada --> [*]

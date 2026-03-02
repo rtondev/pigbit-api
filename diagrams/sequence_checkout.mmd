@@ -1,0 +1,21 @@
+%% Sequência: Checkout e pagamento - foco backend (Português)
+sequenceDiagram
+  participant Cliente as Cliente
+  participant Frontend as Frontend
+  participant API as "API Pigbit"
+  participant Pagamentos as "Integração de Pagamentos (NowPayments)"
+  participant DB as Postgres
+  participant Auditoria as "Serviço de Auditoria"
+  Note over Frontend,API: (frontend inicia o fluxo de checkout)
+  Frontend->>API: POST /checkout (criar fatura)
+  API->>DB: INSERT fatura, retorna id_fatura
+  API->>Pagamentos: POST criar pagamento (id_fatura, valor)
+  Pagamentos-->>API: payment_url / payment_id
+  API->>Frontend: 201 Created (payment_url)
+  Note over Pagamentos,API: cliente realiza pagamento externamente
+  Pagamentos-->>API: POST /webhook (status do pagamento)
+  API->>API: verificar assinatura, localizar fatura
+  API->>DB: atualizar fatura.status, inserir transação
+  API->>Auditoria: registrar evento de pagamento
+  API->>DB: atualizar saldo da carteira (se aplicável)
+  API->>Frontend: (opcional) notificação / evento websocket

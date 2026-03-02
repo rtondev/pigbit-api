@@ -1,0 +1,22 @@
+%% CI/CD - pipeline (Português)
+flowchart TD
+  Repo["Repositório Git"]
+  CI["Runner CI/CD"]
+  Tests["Executar testes"]
+  Lint["Lint / Checagem de tipos"]
+  Build["Construir imagem Docker"]
+  Push["Enviar imagem para Registry"]
+  Deploy["Deploy para Staging / Produção"]
+  Migrate["Executar migrações de BD"]
+  Smoke["Testes de verificação (smoke)"]
+  Contabo["VPS Contabo (servidor alvo)"]
+
+  Repo --> CI
+  CI --> Lint
+  CI --> Tests
+  CI --> Build
+  Build --> Push
+  Push --> Deploy
+  Deploy --> Migrate
+  Migrate --> Smoke
+  Deploy -->|ssh / deploy| Contabo

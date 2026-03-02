@@ -1,0 +1,102 @@
+%% Diagrama ER Lógico - Pigbit (Português)
+%% Arquivo: diagrams/er_logico.mmd
+%% Mostra chaves primárias (PK), chaves estrangeiras (FK) e cardinalidades
+
+erDiagram
+  EMPRESA ||--o{ USUARIO : "1..*"
+  EMPRESA ||--o{ CHAVE_API : "0..*"
+  EMPRESA ||--o{ PRODUTO : "0..*"
+  EMPRESA ||--o{ FATURA : "0..*"
+  USUARIO ||--o{ CARTEIRA : "0..*"
+  CARTEIRA ||--o{ TRANSACAO : "0..*"
+  FATURA ||--o{ TRANSACAO : "0..*"
+  CARTEIRA ||--o{ SAQUE : "0..*"
+  TRANSACAO ||--o{ LOG_AUDITORIA : "0..*"
+  EVENTO_WEBHOOK }o--|| FATURA : "0..1"
+
+  EMPRESA {
+    uuid id_empresa PK
+    varchar nome
+    varchar cnpj
+    varchar email_contato
+    timestamp criado_em
+  }
+
+  USUARIO {
+    uuid id_usuario PK
+    uuid id_empresa FK
+    varchar email
+    varchar senha_hash
+    varchar papel
+    boolean email_verificado
+    timestamp criado_em
+  }
+
+  CHAVE_API {
+    uuid id_chave_api PK
+    uuid id_empresa FK
+    varchar hash_chave
+    varchar rotulo
+    boolean habilitada
+    timestamp criado_em
+  }
+
+  PRODUTO {
+    uuid id_produto PK
+    uuid id_empresa FK
+    varchar nome
+    decimal preco
+    json metadata
+  }
+
+  CARTEIRA {
+    uuid id_carteira PK
+    uuid id_usuario FK
+    decimal saldo
+    varchar moeda
+    timestamp criado_em
+  }
+
+  FATURA {
+    uuid id_fatura PK
+    uuid id_empresa FK
+    uuid id_cliente
+    decimal total
+    varchar status
+    timestamp emitida_em
+  }
+
+  TRANSACAO {
+    uuid id_transacao PK
+    uuid id_carteira FK
+    uuid id_fatura FK
+    decimal valor
+    varchar tipo
+    varchar status
+    timestamp ocorrido_em
+  }
+
+  SAQUE {
+    uuid id_saque PK
+    uuid id_carteira FK
+    decimal valor
+    varchar status
+    timestamp solicitado_em
+  }
+
+  LOG_AUDITORIA {
+    uuid id_auditoria PK
+    uuid id_transacao FK
+    uuid id_usuario FK
+    varchar acao
+    json detalhes
+    timestamp criado_em
+  }
+
+  EVENTO_WEBHOOK {
+    uuid id_evento_webhook PK
+    uuid id_fatura FK
+    varchar tipo_evento
+    json payload
+    timestamp recebido_em
+  }

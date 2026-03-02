@@ -1,0 +1,19 @@
+%% Segurança e Auth - fluxo JWT vs Chave API (Português)
+flowchart LR
+  subgraph Clientes
+    UserClient["Usuário (email / senha)"]
+    APIClient["Cliente API (X-API-KEY)"]
+  end
+
+  UserClient -->|POST /auth/login| AuthController["AuthController"]
+  AuthController -->|validar credenciais| AuthService["AuthService"]
+  AuthService -->|emitir JWT| UserClient
+
+  APIClient -->|X-API-KEY| ApiKeyGuard["ApiKeyGuard"]
+  ApiKeyGuard -->|buscar| DB[("Postgres - tabela API_KEYS")]
+  DB -->|válido| APIController["APIController"]
+
+  AuthGuard -->|verificar JWT| UserContext["Contexto do Usuário"]
+  ApiKeyGuard -->|resolver empresa| CompanyContext["Contexto da Empresa"]
+
+  %% Observação: use o guard `jwt-or-apikey` para endpoints públicos da API

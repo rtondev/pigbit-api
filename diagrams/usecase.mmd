@@ -1,0 +1,60 @@
+%% Diagrama de Caso de Uso - Pigbit (Português)
+%% Atores principais focados no backend
+
+graph TD
+  subgraph Atores
+    Admin["Administrador"]
+    Empresa["Empresa"]
+    Usuario["Usuário (colaborador)"]
+    Cliente["Cliente (pagador)"]
+    Gateway["Gateway de Pagamento (NowPayments)"]
+    ClienteAPI["Cliente API"]
+  end
+
+  subgraph Sistema["Plataforma Pigbit - Backend"]
+    Auth["Autenticar / Registrar / Recuperar senha"]
+    Perfil["Gerenciar Perfil / Empresa"]
+    Usuarios["Gerenciar Usuários"]
+    Produtos["Gerenciar Produtos"]
+    Faturas["Emitir / Visualizar Faturas"]
+    Checkout["Gerenciar Checkout / Pagamentos"]
+    Carteiras["Gerenciar Carteiras"]
+    Saques["Solicitar Saque"]
+    Transacoes["Visualizar Transações"]
+    ChavesAPI["Gerar / Revogar Chaves API"]
+    Webhooks["Configurar Webhooks / Receber Eventos"]
+    Auditoria["Auditar Eventos / Logs"]
+  end
+
+  %% Relações ator -> caso de uso (backend)
+  Administrador --> Auth
+  Administrador --> Perfil
+  Administrador --> Usuarios
+  Administrador --> Produtos
+  Administrador --> ChavesAPI
+  Administrador --> Auditoria
+
+  Empresa --> Auth
+  Empresa --> Perfil
+  Empresa --> Produtos
+  Empresa --> Faturas
+  Empresa --> Transacoes
+  Empresa --> ChavesAPI
+  Empresa --> Webhooks
+
+  Usuario --> Auth
+  Usuario --> Carteiras
+  Usuario --> Checkout
+  Usuario --> Faturas
+  Usuario --> Saques
+
+  Cliente --> Checkout
+
+  Gateway --> Checkout
+  Gateway --> Webhooks
+
+  ClienteAPI --> ChavesAPI
+  ClienteAPI --> Faturas
+  ClienteAPI --> Webhooks
+
+  %% observação: diagrama focado no backend para TCC

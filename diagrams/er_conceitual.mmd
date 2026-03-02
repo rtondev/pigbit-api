@@ -1,0 +1,75 @@
+%% Diagrama ER Conceitual - Pigbit (Português)
+%% Arquivo: diagrams/er_conceitual.mmd
+
+erDiagram
+  %% Entidades de alto nível e relações (conceitual)
+  EMPRESA ||--o{ USUARIO : possui
+  EMPRESA ||--o{ CHAVE_API : emite
+  EMPRESA ||--o{ PRODUTO : oferece
+  EMPRESA ||--o{ FATURA : emite
+  USUARIO ||--o{ CARTEIRA : possui
+  CARTEIRA ||--o{ TRANSACAO : registra
+  FATURA ||--o{ TRANSACAO : liquida
+  CARTEIRA ||--o{ SAQUE : financia
+  TRANSACAO ||--o{ LOG_AUDITORIA : audita
+  EVENTO_WEBHOOK }o--|| FATURA : notifica
+
+  %% Atributos principais (conceitual — foco no significado)
+  EMPRESA {
+    string id
+    string nome
+    string email_contato
+  }
+
+  USUARIO {
+    string id
+    string email
+    string papel
+  }
+
+  CHAVE_API {
+    string id
+    string valor
+  }
+
+  PRODUTO {
+    string id
+    string nome
+    decimal preco
+  }
+
+  CARTEIRA {
+    string id
+    decimal saldo
+    string moeda
+  }
+
+  FATURA {
+    string id
+    decimal total
+    string status
+  }
+
+  TRANSACAO {
+    string id
+    decimal valor
+    string status
+  }
+
+  SAQUE {
+    string id
+    decimal valor
+    string status
+  }
+
+  LOG_AUDITORIA {
+    string id
+    string acao
+    string ator
+  }
+
+  EVENTO_WEBHOOK {
+    string id
+    string tipo_evento
+    string payload
+  }

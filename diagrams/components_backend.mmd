@@ -1,0 +1,41 @@
+%% Diagrama de Componentes - Backend Pigbit (Português)
+graph LR
+  subgraph API["API (Nest.js)"]
+    Controllers["Controllers"]
+    Services["Serviços (services)"]
+    Modules["Módulos"]
+    Integrations["Integrações externas"]
+  end
+
+  subgraph Modules["Módulos do backend"]
+    AuthModule["auth"]
+    UsersModule["usuários"]
+    CompaniesModule["empresas"]
+    InvoicesModule["faturas"]
+    WalletsModule["carteiras"]
+    WebhooksModule["webhooks"]
+    ApiKeysModule["chaves-api"]
+    PaymentsModule["pagamentos / integrações"]
+  end
+
+  subgraph Infra["Infraestrutura"]
+    Postgres["Postgres DB"]
+    Redis["Redis - fila / cache"]
+    ObjectStorage["Armazenamento (S3 / MinIO)"]
+    ExternalPayments["NowPayments"]
+  end
+
+  Controllers --> Services
+  Services --> Postgres
+  Services --> Redis
+  Services --> ObjectStorage
+  PaymentsModule --> ExternalPayments
+  WebhooksModule --> ExternalPayments
+  ApiKeysModule --> Postgres
+  AuthModule --> Services
+  InvoicesModule --> Services
+
+  %% Observações: caminhos do projeto
+  %% controllers: controllers/*.controller.ts
+  %% services: services/*.service.ts
+  %% modules: modules/*

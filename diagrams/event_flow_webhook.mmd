@@ -1,0 +1,13 @@
+%% Fluxo de eventos: Processamento de Webhook (Português)
+flowchart TD
+  NowPayments(("NowPayments")) -->|POST webhook| API["API - /webhooks"]
+  API -->|verificar assinatura| Verificacao["Serviço de Verificação"]
+  Verificacao -->|ok| DB[("Postgres")]
+  DB --> AtualizarFatura["Atualizar fatura e transação"]
+  AtualizarFatura --> Auditoria["Serviço de Auditoria"]
+  AtualizarFatura --> Fila["Enfileirar job"]
+  Fila --> Worker["Worker - processador"]
+  Worker --> Outbound["Entrega de webhooks (outbound)"]
+  Outbound --> EndpointEmpresa["Endpoint webhook da empresa"]
+  Outbound -->|sucesso/erro| Auditoria
+  Verificacao -->|inválida| Auditoria

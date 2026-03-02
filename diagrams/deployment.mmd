@@ -1,0 +1,29 @@
+%% Diagrama de Implantação - backend (Português, TCC)
+graph TD
+  Internet["Internet"]
+  HostingerDNS["Hostinger DNS (domínio: pigbit.site)"]
+  ContaboVPS["VPS Contabo (IP público)"]
+  Nginx["Nginx (proxy reverso)"]
+  API["Container API (Nest.js)"]
+  Worker["Container Worker (processador de filas)"]
+  Postgres["Postgres DB"]
+  Redis["Redis (fila / cache)"]
+  MinIO["Armazenamento - S3/MinIO"]
+  CI["Runner CI/CD (GitHub Actions / Runner)"]
+  Payments["NowPayments (gateway)"]
+
+  Internet --> HostingerDNS
+  HostingerDNS -->|aponta para IP| ContaboVPS
+  ContaboVPS --> Nginx
+  Nginx --> API
+  Nginx --> Worker
+  API --> Postgres
+  API --> Redis
+  Worker --> Postgres
+  Worker --> Redis
+  API --> MinIO
+  API --> Payments
+  CI -->|deploy via SSH| ContaboVPS
+
+  classDef infra fill:#f3f4f6,stroke:#333
+  class Postgres,Redis,MinIO,Payments infra
