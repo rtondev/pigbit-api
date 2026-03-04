@@ -19,31 +19,42 @@ export class AppService {
 
   async getPublicStats() {
     try {
-      // Total de usuários/clientes
-      const totalUsers = await this.userRepo.count();
+      // Total de usuários/clientes registrados
+      const totalUsers = await this.userRepo
+        .createQueryBuilder('u')
+        .select('COUNT(u.id)', 'count')
+        .getRawOne();
+      
+      const totalClients = parseInt(totalUsers?.count || '0', 10);
 
-      // Total de transações (qualquer status que indique conclusão)
+      // Total de transações
       const totalTransactions = await this.transactionRepo
         .createQueryBuilder('t')
-        .where("t.status IN ('confirmed', 'completed', 'success')")
-        .getCount();
+        .select('COUNT(t.id)', 'count')
+        .getRawOne();
+      
+      const totalTx = parseInt(totalTransactions?.count || '0', 10);
 
-      // Total de faturas processadas
-      const totalInvoices = await this.invoiceRepo.count();
+      // Total de faturas
+      const totalInvoices = await this.invoiceRepo
+        .createQueryBuilder('i')
+        .select('COUNT(i.id)', 'count')
+        .getRawOne();
+      
+      const totalInv = parseInt(totalInvoices?.count || '0', 10);
 
-      // Volume total em BRL (sum de todas as transações)
+      // Volume total em BRL
       const volumeResult = await this.transactionRepo
         .createQueryBuilder('t')
         .select('COALESCE(SUM(CAST(t.amountBrl AS FLOAT)), 0)', 'total')
-        .where("t.status IN ('confirmed', 'completed', 'success')")
         .getRawOne();
 
       const totalVolumeBrl = Math.round(parseFloat(volumeResult?.total || '0') * 100) / 100;
 
       return {
-        totalClients: totalUsers,
-        totalTransactions: totalTransactions,
-        totalInvoices: totalInvoices,
+        totalClients: totalClients,
+        totalTransactions: totalTx,
+        totalInvoices: totalInv,
         totalVolumeBrl: totalVolumeBrl,
         timestamp: new Date().toISOString(),
       };
