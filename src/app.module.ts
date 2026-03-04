@@ -59,8 +59,8 @@ import { AppService } from './app.service';
           PendingRegistration,
           PasswordResetCode,
           FailedLoginAttempt,
-        SensitiveChangeCode,
-        ApiKey,
+          SensitiveChangeCode,
+          ApiKey,
       ],
         synchronize:
           process.env.NODE_ENV === 'development' ||
