@@ -43,10 +43,10 @@ export class AppService {
       
       const totalInv = parseInt(totalInvoices?.count || '0', 10);
 
-      // Volume total em BRL
+      // Volume total em BRL (coluna valor_brl na entidade Transaction)
       const volumeResult = await this.transactionRepo
         .createQueryBuilder('t')
-        .select('COALESCE(SUM(CAST(t.amountBrl AS FLOAT)), 0)', 'total')
+        .select('COALESCE(SUM(CAST(t.valorBrl AS FLOAT)), 0)', 'total')
         .getRawOne();
 
       const totalVolumeBrl = Math.round(parseFloat(volumeResult?.total || '0') * 100) / 100;
