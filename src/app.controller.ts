@@ -23,4 +23,14 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('public/stats')
+  @ApiOperation({
+    summary: 'Estatísticas públicas',
+    description: 'Total de clientes, transações, faturas e volume (sem autenticação)',
+  })
+  @ApiResponse({ status: 200, description: 'Estatísticas da plataforma' })
+  async getPublicStats() {
+    return this.appService.getPublicStats();
+  }
 }

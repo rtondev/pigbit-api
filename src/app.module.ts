@@ -39,6 +39,7 @@ import { AppService } from './app.service';
       load: [configuration],
     }),
     CommonModule,
+    TypeOrmModule.forFeature([User, Transaction, Invoice]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
