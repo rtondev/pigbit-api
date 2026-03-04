@@ -22,19 +22,20 @@ export class AppService {
       // Total de usuários/clientes
       const totalUsers = await this.userRepo.count();
 
-      // Total de transações confirmadas
-      const totalTransactions = await this.transactionRepo.count({
-        where: { status: 'confirmed' },
-      });
+      // Total de transações (qualquer status que indique conclusão)
+      const totalTransactions = await this.transactionRepo
+        .createQueryBuilder('t')
+        .where("t.status IN ('confirmed', 'completed', 'success')")
+        .getCount();
 
       // Total de faturas processadas
       const totalInvoices = await this.invoiceRepo.count();
 
-      // Volume total em BRL (sum de todas as transações confirmadas)
+      // Volume total em BRL (sum de todas as transações)
       const volumeResult = await this.transactionRepo
         .createQueryBuilder('t')
         .select('COALESCE(SUM(CAST(t.amountBrl AS FLOAT)), 0)', 'total')
-        .where("t.status = :status", { status: 'confirmed' })
+        .where("t.status IN ('confirmed', 'completed', 'success')")
         .getRawOne();
 
       const totalVolumeBrl = Math.round(parseFloat(volumeResult?.total || '0') * 100) / 100;
