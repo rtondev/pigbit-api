@@ -13,6 +13,11 @@ import { Product } from '../../entities/product.entity';
 import { NowpaymentsService } from '../../integrations/nowpayments/nowpayments.service';
 import { ProductsService } from '../products/products.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  INVOICE_STATUS_UPDATED,
+  InvoiceStatusPayload,
+} from '../../realtime/realtime.events';
 
 const TAXA_PLATAFORMA = 0.01;
 const INVOICE_EXPIRY_MINUTES = 15;
@@ -26,6 +31,7 @@ export class InvoicesService {
     private transactionRepo: Repository<Transaction>,
     private nowpayments: NowpaymentsService,
     private productsService: ProductsService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async getCurrencies(): Promise<string[]> {
@@ -187,7 +193,14 @@ export class InvoicesService {
       }
     }
 
-    return this.findById(invoice.id);
+    const updated = await this.findById(invoice.id);
+    const payload: InvoiceStatusPayload = {
+      paymentId,
+      status,
+      txHash,
+    };
+    this.eventEmitter.emit(INVOICE_STATUS_UPDATED, payload);
+    return updated;
   }
 
   private buildExplorerLink(moedaCripto: string, hash: string): string {
@@ -213,7 +226,14 @@ export class InvoicesService {
       { id, userId },
       { status: 'expired', updatedAt: new Date() },
     );
-    return this.findById(id, userId);
+    const cancelled = await this.findById(id, userId);
+    if (cancelled.paymentId) {
+      this.eventEmitter.emit(INVOICE_STATUS_UPDATED, {
+        paymentId: cancelled.paymentId,
+        status: 'expired',
+      });
+    }
+    return cancelled;
   }
 
   async getCheckoutData(paymentId: string) {

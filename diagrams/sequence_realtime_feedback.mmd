@@ -1,0 +1,16 @@
+%% Tempo real: webhook → evento interno → WebSocket → cliente (Português)
+sequenceDiagram
+  participant NP as NowPayments
+  participant API as API Pigbit
+  participant DB as Postgres
+  participant Bus as EventEmitter
+  participant WS as Gateway /realtime
+  participant Front as Frontend Checkout
+
+  NP->>API: POST /webhooks/nowpayments
+  API->>API: verifyWebhookSignature
+  API->>DB: update fatura.status (pedido/carrinho)
+  API->>Bus: emit invoice.status.updated
+  Bus->>WS: OnEvent
+  WS->>Front: invoiceStatus { paymentId, status }
+  Note over Front: UI atualiza sem polling — feedback em tempo real

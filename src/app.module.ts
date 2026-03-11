@@ -31,9 +31,12 @@ import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { NowpaymentsModule } from './integrations/nowpayments/nowpayments.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -79,6 +82,7 @@ import { AppService } from './app.service';
     DashboardModule,
     ApiKeysModule,
     NowpaymentsModule,
+    RealtimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

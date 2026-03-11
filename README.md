@@ -43,7 +43,17 @@ docker-compose up -d
 
 ## Swagger
 
-http://localhost:3000/api/docs
+http://localhost:3000/api/docs (ajuste a porta conforme `PORT` no `.env`)
+
+## WebSocket — tempo real (checkout e monitoramento)
+
+- **Namespace:** `/realtime` (Socket.IO, path `/socket.io`)
+- **Checkout:** após conectar, emitir `subscribeCheckout` com o `paymentId` (string). Eventos: `invoiceStatus` quando o webhook alterar o status do pedido (carrinho = fatura).
+- **Monitoramento:** emitir `subscribeHealth` para receber `serviceEvent` a cada atualização de status de fatura (feedback em tempo real).
+- **Doc:** `docs/CARRINHO_PEDIDO_E_TEMPO_REAL.md`
+- **CORS:** habilitado em `main.ts` para origem do frontend.
+
+Frontend: definir `NEXT_PUBLIC_API_URL` com a URL direta da API (rewrites do Next não fazem upgrade WebSocket).
 
 ## Endpoints
 
