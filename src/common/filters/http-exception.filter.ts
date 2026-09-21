@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { forwardErrorToHub } from '../hub-errors';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -50,6 +51,27 @@ export class HttpExceptionFilter implements ExceptionFilter {
       `${request.method} ${request.url} - ${status}`,
       exception instanceof Error ? exception.stack : undefined,
     );
+
+    const path = request.originalUrl || request.url;
+    if (
+      (status === HttpStatus.INTERNAL_SERVER_ERROR ||
+        status === HttpStatus.BAD_GATEWAY) &&
+      !path.startsWith('/errors/report')
+    ) {
+      const errMessage =
+        typeof body === 'object' && body !== null && 'message' in body
+          ? String((body as { message: unknown }).message)
+          : String(message);
+      const stack = exception instanceof Error ? exception.stack : undefined;
+      void forwardErrorToHub({
+        source: 'backend',
+        message: errMessage,
+        stack: stack ?? null,
+        path,
+        method: request.method,
+        statusCode: status,
+      });
+    }
 
     response.status(status).json({
       statusCode: status,

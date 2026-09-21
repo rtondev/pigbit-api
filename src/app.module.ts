@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from './common/common.module';
 import configuration from './config/configuration';
@@ -33,10 +35,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RealtimeModule } from './realtime/realtime.module';
+import { ErrorLogsModule } from './error-logs/error-logs.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 120,
+      },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -83,8 +93,15 @@ import { RealtimeModule } from './realtime/realtime.module';
     ApiKeysModule,
     NowpaymentsModule,
     RealtimeModule,
+    ErrorLogsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

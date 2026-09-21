@@ -3,7 +3,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import * as express from 'express';
 
 async function bootstrap() {
@@ -30,8 +29,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.useGlobalFilters(new HttpExceptionFilter());
-
   const swagger = new DocumentBuilder()
     .setTitle('PIGBIT API')
     .setDescription(
