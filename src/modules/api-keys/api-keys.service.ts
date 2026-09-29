@@ -48,7 +48,14 @@ export class ApiKeysService {
     return this.apiKeyRepo.find({
       where: { userId },
       order: { createdAt: 'DESC' },
-      select: ['id', 'name', 'keyPrefix', 'allowedIps', 'lastUsedAt', 'createdAt'],
+      select: {
+        id: true,
+        name: true,
+        keyPrefix: true,
+        allowedIps: true,
+        lastUsedAt: true,
+        createdAt: true,
+      },
     });
   }
 
@@ -64,7 +71,7 @@ export class ApiKeysService {
     const keyPrefix = key.substring(0, KEY_PREFIX.length + 8);
     const keys = await this.apiKeyRepo.find({
       where: { keyPrefix },
-      relations: ['user'],
+      relations: { user: true },
     });
 
     const keyHash = this.hashKey(key);

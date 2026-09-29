@@ -29,17 +29,17 @@ export class UsersService {
   async findById(id: string): Promise<Partial<User>> {
     const user = await this.userRepo.findOne({
       where: { id },
-      select: [
-        'id',
-        'email',
-        'cnpj',
-        'telefone',
-        'nomeFantasia',
-        'razaoSocial',
-        'endereco',
-        'emailVerified',
-        'twoFaEnabled',
-      ],
+      select: {
+        id: true,
+        email: true,
+        cnpj: true,
+        telefone: true,
+        nomeFantasia: true,
+        razaoSocial: true,
+        endereco: true,
+        emailVerified: true,
+        twoFaEnabled: true,
+      },
     });
     if (!user) throw new NotFoundException('Usuário não encontrado');
     return user;

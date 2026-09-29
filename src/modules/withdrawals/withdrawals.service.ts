@@ -54,7 +54,7 @@ export class WithdrawalsService {
   ): Promise<PaginatedResponse<Withdrawal>> {
     const [data, total] = await this.withdrawalRepo.findAndCount({
       where: { userId },
-      relations: ['wallet'],
+      relations: { wallet: true },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: Math.min(limit, 100),
@@ -65,7 +65,7 @@ export class WithdrawalsService {
   async findOne(id: string, userId: string): Promise<Withdrawal> {
     const withdrawal = await this.withdrawalRepo.findOne({
       where: { id, userId },
-      relations: ['wallet'],
+      relations: { wallet: true },
     });
     if (!withdrawal) throw new NotFoundException('Saque não encontrado');
     return withdrawal;

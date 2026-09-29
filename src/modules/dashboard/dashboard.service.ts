@@ -95,7 +95,7 @@ export class DashboardService {
   async getTransactionById(id: string, userId: string) {
     const transaction = await this.transactionRepo.findOne({
       where: { id },
-      relations: ['invoice'],
+      relations: { invoice: true },
     });
     if (!transaction) throw new NotFoundException('Transação não encontrada');
     if (transaction.invoice.userId !== userId) {

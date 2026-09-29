@@ -128,7 +128,7 @@ export class InvoicesService {
     if (userId) where.userId = userId;
     const invoice = await this.invoiceRepo.findOne({
       where,
-      relations: ['product', 'transaction'],
+      relations: { product: true, transaction: true },
     });
     if (!invoice) throw new NotFoundException('Invoice não encontrado');
     return invoice;
@@ -141,7 +141,7 @@ export class InvoicesService {
   ): Promise<PaginatedResponse<Invoice>> {
     const [data, total] = await this.invoiceRepo.findAndCount({
       where: { userId },
-      relations: ['product', 'transaction'],
+      relations: { product: true, transaction: true },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: Math.min(limit, 100),
