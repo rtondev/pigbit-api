@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ApiKey } from '../../entities/api-key.entity';
 import { User } from '../../entities/user.entity';
@@ -18,14 +19,23 @@ const jwtModule = JwtModule.registerAsync({
   inject: [ConfigService],
 });
 
+const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([ApiKey, User]),
     AuthModule,
     jwtModule,
+    passportModule,
   ],
   controllers: [ApiKeysController],
   providers: [ApiKeysService, JwtOrApiKeyGuard],
-  exports: [ApiKeysService, JwtOrApiKeyGuard, jwtModule, AuthModule],
+  exports: [
+    ApiKeysService,
+    JwtOrApiKeyGuard,
+    jwtModule,
+    passportModule,
+    AuthModule,
+  ],
 })
 export class ApiKeysModule {}
