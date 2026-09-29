@@ -1,0 +1,59 @@
+# Produção: Postgres e Redis sem portas expostas; API só em 127.0.0.1 (o nginx faz o HTTPS).
+# Uso: docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pigbit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pigbit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}
+      POSTGRES_DB: pigbit
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pigbit -d pigbit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 512m
+
+  redis:
+    image: redis:7-alpine
+    container_name: pigbit-redis
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "96mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 128m
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pigbit-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-3050}:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://pigbit:${POSTGRES_PASSWORD}@postgres:5432/pigbit
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    mem_limit: 512m
+
+volumes:
+  postgres_data:
+  redis_data:
